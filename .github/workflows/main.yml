@@ -1,0 +1,140 @@
+name: DevOps Infrastructure CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Display project info
+        run: |
+          echo "================================"
+          echo "DevOps Infrastructure Project"
+          echo "Built by: Balogun Ibrahim"
+          echo "================================"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Date: $(date)"
+
+      - name: Validate project structure
+        run: |
+          echo "Checking project structure..."
+          ls -la
+          echo "Terraform files:"
+          ls terraform/
+          echo "Ansible files:"
+          ls ansible/
+          echo "Docker files:"
+          ls docker/
+          echo "App files:"
+          ls app/
+
+      - name: Validate HTML
+        run: |
+          echo "Validating HTML file..."
+          if [ -f app/index.html ]; then
+            echo "index.html exists"
+            wc -l app/index.html
+          else
+            echo "ERROR: index.html not found"
+            exit 1
+          fi
+
+      - name: Validate Terraform files
+        run: |
+          echo "Checking Terraform files..."
+          if [ -f terraform/main.tf ]; then
+            echo "main.tf exists"
+          fi
+          if [ -f terraform/variables.tf ]; then
+            echo "variables.tf exists"
+          fi
+          if [ -f terraform/outputs.tf ]; then
+            echo "outputs.tf exists"
+          fi
+
+      - name: Validate Ansible playbook
+        run: |
+          echo "Checking Ansible files..."
+          if [ -f ansible/deploy.yml ]; then
+            echo "deploy.yml exists"
+          fi
+
+      - name: Build Docker image
+        run: |
+          echo "Building Docker image..."
+          cp app/index.html docker/
+          cd docker
+          docker build -t devops-project:latest .
+          echo "Docker image built successfully"
+
+      - name: Test Docker container
+        run: |
+          echo "Testing Docker container..."
+          docker run -d --name test-container -p 8080:80 devops-project:latest
+          sleep 5
+          curl -f http://localhost:8080 || exit 1
+          echo "Container is running and responding"
+          docker stop test-container
+          docker rm test-container
+
+      - name: Pipeline summary
+        run: |
+          echo "================================"
+          echo "Pipeline completed successfully!"
+          echo "All checks passed"
+          echo "================================"
+
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for sensitive files
+        run: |
+          echo "Checking for sensitive files..."
+          if [ -f .env ]; then
+            echo "WARNING: .env file found"
+            exit 1
+          fi
+          if find . -name "*.pem" | grep -q .; then
+            echo "WARNING: PEM files found"
+            exit 1
+          fi
+          echo "No sensitive files found"
+
+      - name: Verify gitignore
+        run: |
+          echo "Verifying .gitignore..."
+          cat .gitignore
+          echo "Gitignore verified"
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [build, security-check]
+
+    steps:
+      - name: Success notification
+        run: |
+          echo "================================"
+          echo "ALL PIPELINE STAGES PASSED"
+          echo "Project: DevOps Infrastructure"
+          echo "Author: Balogun Ibrahim"
+          echo "Status: Ready for deployment"
+          echo "================================"

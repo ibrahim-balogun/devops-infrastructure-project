@@ -1,0 +1,91 @@
+---
+- name: Deploy DevOps Infrastructure Project
+  hosts: webservers
+  become: yes
+
+  vars:
+    app_name: devops-project
+    docker_image: "ibrahimbalogun025/myimage"
+    app_port: 80
+
+  tasks:
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - nginx
+          - curl
+          - git
+        state: present
+
+    - name: Start and enable Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Start and enable Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Pull Docker image
+      command: docker pull "{{ docker_image }}"
+
+    - name: Stop existing container
+      command: docker stop "{{ app_name }}"
+      ignore_errors: yes
+
+    - name: Remove existing container
+      command: docker rm "{{ app_name }}"
+      ignore_errors: yes
+
+    - name: Run new container
+      command: >
+        docker run -d
+        --name "{{ app_name }}"
+        --restart always
+        -p 8080:80
+        "{{ docker_image }}"
+
+    - name: Create Nginx config
+      copy:
+        content: |
+          server {
+              listen 80;
+              server_name _;
+
+              location / {
+                  proxy_pass http://localhost:8080;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+              }
+          }
+        dest: /etc/nginx/sites-available/devops-project
+        mode: '0644'
+      notify: Restart Nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/devops-project
+        dest: /etc/nginx/sites-enabled/devops-project
+        state: link
+      notify: Restart Nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
