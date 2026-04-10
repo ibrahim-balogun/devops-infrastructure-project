@@ -32,6 +32,7 @@ Live Website → CloudWatch Monitoring
 | Linux/Bash | Server management and scripting |
 
 ## Project Structure
+```
 devops-infrastructure-project/
 ├── app/                    # Web application
 │   └── index.html
@@ -50,7 +51,8 @@ devops-infrastructure-project/
 │   └── deploy.sh
 ├── docs/                   # Documentation
 └── .github/workflows/      # CI/CD pipeline
-└── main.yml
+    └── main.yml
+```
 
 ## Infrastructure Created
 - Custom VPC with public subnet
