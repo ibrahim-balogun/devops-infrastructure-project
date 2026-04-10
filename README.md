@@ -2,6 +2,12 @@
 
 ![CI/CD Pipeline](https://github.com/ibrahim-balogun/devops-infrastructure-project/actions/workflows/main.yml/badge.svg)
 
+## 🌐 Live Demo
+**Website:** http://34.243.8.122
+
+> Note: Server may be stopped to save AWS free tier hours.
+> Contact: balogunibrahim025@gmail.com
+
 ## Overview
 A complete end-to-end DevOps infrastructure project demonstrating 
 real-world practices used by professional Cloud DevOps Engineers.
