@@ -5,8 +5,9 @@
 ## 🌐 Live Demo
 **Website:** http://34.243.8.122
 
-> Note: Server may be stopped to save AWS free tier hours.
-> Contact: balogunibrahim025@gmail.com
+> **Note:** Server is stopped to preserve AWS free tier hours.
+> To see live demo contact: balogunibrahim025@gmail.com
+> I will start the server for demonstration purposes.
 
 ## Overview
 A complete end-to-end DevOps infrastructure project demonstrating 
